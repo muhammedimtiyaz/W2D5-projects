@@ -1,3 +1,4 @@
+require 'byebug'
 class Node
   attr_reader :key
   attr_accessor :val, :next, :prev
@@ -31,8 +32,12 @@ attr_accessor :head, :tail
   end
 
   def [](i)
-    each_with_index { |link, j| return link if i == j }
-    nil
+    if i.is_a?(Integer)
+      each_with_index { |link, j| return link if i == j }
+      nil
+    else
+      self.get(i)
+    end
   end
 
   def first
@@ -48,9 +53,20 @@ attr_accessor :head, :tail
   end
 
   def get(key)
+    # self.[](key)
+    # debugger
+    self.each do |node|
+      return node.val if node.key == key
+    end
+
+    nil
   end
 
   def include?(key)
+    self.each do |node|
+      return true if node.key == key
+    end
+    false
   end
 
   def append(key, val)
@@ -64,16 +80,38 @@ attr_accessor :head, :tail
   end
 
   def update(key, val)
+    unless self.empty?
+      # self[key].val = val
+      self.each do |node|
+        node.val = val if node.key == key
+      end
+    end
   end
 
   def remove(key)
+    unless self.empty?
+      self.each do |node|
+        if node.key == key
+          prev_node = node.prev
+          next_node = node.next
+          prev_node.next = next_node
+          next_node.prev = prev_node
+        end
+      end
+    end
   end
 
-  def each
+  def each(&prc)
+    current_node = @head.next
+    until current_node == @tail
+      prc.call(current_node)
+      current_node = current_node.next
+    end
   end
 
   # uncomment when you have `each` working and `Enumerable` included
-  # def to_s
-  #   inject([]) { |acc, link| acc << "[#{link.key}, #{link.val}]" }.join(", ")
-  # end
+  def to_s
+    inject([]) { |acc, link| acc << "[#{link.key}, #{link.val}]" }.join(", ")
+  end
+
 end
